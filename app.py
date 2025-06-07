@@ -5,6 +5,9 @@ import joblib
 from streamlit_lottie import st_lottie
 import json
 import plotly.graph_objects as go
+from fpdf import FPDF
+import io
+from io import BytesIO
 
 # Load models
 rf_model = joblib.load("Tuned_random_forest_model.pkl")
@@ -19,6 +22,46 @@ def load_lottie(filepath: str):
         return json.load(f)
 
 lottie_heart = load_lottie("heart.json")
+
+
+def generate_pdf_report(input_data, prob, verdict_text, risk_level):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 16)
+    pdf.set_text_color(255, 77, 109)
+    pdf.cell(200, 10, "CHD Risk Prediction Report", ln=True, align='C')
+
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", '', 12)
+    pdf.ln(10)
+
+    pdf.cell(200, 10, "Input Details:", ln=True)
+    for col, val in input_data.items():
+        pdf.cell(200, 8, f"{col}: {val}", ln=True)
+
+    pdf.ln(10)
+    pdf.cell(200, 10, f"CHD Risk Probability (Stacking Model): {prob:.2%}", ln=True)
+    pdf.ln(5)
+    pdf.cell(200, 10, f"Final Verdict: {verdict_text}", ln=True)
+
+    pdf.ln(5)
+    if risk_level == "High":
+        pdf.set_text_color(200, 0, 0)
+        pdf.multi_cell(200, 10, "You are at HIGH risk of Coronary Heart Disease. Immediate consultation with a cardiologist is strongly advised.")
+    elif risk_level == "Moderate":
+        pdf.set_text_color(255, 165, 0)
+        pdf.multi_cell(200, 10, "You are at MODERATE risk. Consider lifestyle changes, follow-up tests, and medical guidance.")
+    else:
+        pdf.set_text_color(0, 128, 0)
+        pdf.multi_cell(200, 10, "You are at LOW risk. Keep up your healthy lifestyle and attend regular checkups.")
+
+    # ✅ Generate PDF bytes
+    pdf_bytes = pdf.output(dest='S').encode('latin-1')
+    return BytesIO(pdf_bytes)
+
+# --- Reset Page ---
+if st.button("🔄 Reset"):
+    st.rerun()
 
 # Custom CSS
 st.markdown("""
@@ -184,6 +227,21 @@ if st.button("🩺 Predict CHD Risk"):
         st.success("🟡 Moderate Risk of CHD. Lifestyle changes and further tests are recommended.")
     else:
         st.success("🟢 Low Risk. Maintain a healthy lifestyle and regular checkups.")
+
+    # Generate and download PDF
+   
+    input_summary = input_df.iloc[0].to_dict()
+    risk_label = "High" if stack_proba > 0.6 else "Moderate" if stack_proba >= 0.3 else "Low"
+    verdict = "High Risk" if risk_label == "High" else "Moderate Risk" if risk_label == "Moderate" else "Low Risk"
+
+    pdf_buffer = generate_pdf_report(input_df.iloc[0].to_dict(), stack_proba, verdict, risk_label)
+
+    st.download_button(
+    label="📄 Download PDF Report",
+    data=pdf_buffer,
+    file_name="CHD_Risk_Report.pdf",
+    mime="application/pdf"
+    )
 
     # Explanation Expander
     with st.expander("ℹ️ Understanding the CHD Risk Predictions (Important)"):
