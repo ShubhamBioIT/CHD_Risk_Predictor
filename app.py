@@ -138,6 +138,8 @@ if st.button("🩺 Predict CHD Risk"):
             fig.update_layout(height=300, margin=dict(t=30, b=10))
             st.plotly_chart(fig, use_container_width=True)
 
+    st.success(f"✅ Based on the Stacking Classifier, **{'you are at risk' if stack_pred else 'your risk is low'}**. Please consult a healthcare provider.")
+
     # Add clear spacing
     st.markdown("<br><br>", unsafe_allow_html=True)
 
