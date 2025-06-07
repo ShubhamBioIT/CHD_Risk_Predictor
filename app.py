@@ -13,7 +13,7 @@ stack_model = joblib.load("Stacking_classifier_model.pkl")
 # Page config
 st.set_page_config(page_title="CHD Predictor", layout="wide")
 
-# Load animation
+# Load Lottie animation
 def load_lottie(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
@@ -29,7 +29,7 @@ st.markdown("""
             color: #ff4d6d;
             text-align: center;
             animation: fadeIn 3s ease-in-out;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
         .stButton > button {
             color: white !important;
@@ -46,56 +46,99 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title and animation
+# Title
 st.markdown('<div class="title">💖 CHD Risk Predictor</div>', unsafe_allow_html=True)
 st_lottie(lottie_heart, height=200, key="heart")
 
-# Input fields
+# Expander Reference Table
+with st.expander("📘 Show Reference Table For Healthy Individual (Based on Age)"):
+    st.markdown("""
+### 🧾 Reference Table for Healthy Individuals (Age-Wise)
+
+| Age Group | Systolic BP | Diastolic BP | Total Cholesterol | BMI       | Fasting Glucose |
+|-----------|-------------|---------------|--------------------|-----------|------------------|
+| 18–29     | 100–120     | 60–80         | 125–200            | 18.5–24.9 | 70–99            |
+| 30–39     | 105–125     | 65–85         | 130–210            | 18.5–24.9 | 70–99            |
+| 40–49     | 110–130     | 70–85         | 140–220            | 18.5–25.0 | 70–99            |
+| 50–59     | 115–135     | 70–90         | 150–230            | 18.5–25.0 | 70–99            |
+| 60+       | 120–140     | 70–90         | 160–240            | 19–26     | 70–105           |
+""")
+
+# User Input
 st.subheader("🧬 Enter Patient Details")
 col1, col2, col3 = st.columns(3)
 
 with col1:
     age = st.number_input("Age", 18, 100, 50)
-    cigsPerDay = st.number_input("Cigarettes Per Day", 0, 50, 5)
+    sex = st.selectbox("Sex", ["Male", "Female"])
+    is_smoking = st.selectbox("Do You Smoke?", ["No", "Yes"])
+    cigsPerDay = st.slider("Cigarettes per Day", 0, 50, 0)
+    
+with col2:
     BPMeds = st.selectbox("On BP Medication?", ["No", "Yes"])
+    prevalentStroke = st.selectbox("History of Stroke?", ["No", "Yes"])
+    prevalentHyp = st.selectbox("Hypertension?", ["No", "Yes"])
     diabetes = st.selectbox("Diabetes?", ["No", "Yes"])
 
-with col2:
-    sex = st.selectbox("Sex", ["Male", "Female"])
-    prevalentStroke = st.selectbox("History of Stroke?", ["No", "Yes"])
+with col3:
     sysBP = st.slider("Systolic BP", 90, 200, 120)
     diaBP = st.slider("Diastolic BP", 60, 140, 80)
-
-with col3:
-    prevalentHyp = st.selectbox("Hypertension?", ["No", "Yes"])
     totChol = st.slider("Total Cholesterol", 100, 400, 200)
-    BMI = st.slider("BMI", 10.0, 50.0, 25.0)
     glucose = st.slider("Glucose", 50, 300, 100)
+    BMI = st.slider("BMI (for category)", 10.0, 50.0, 25.0)
 
-# Encode categorical values
+# Encoding
 sex = 1 if sex == "Male" else 0
+is_smoking = 1 if is_smoking == "Yes" else 0
 BPMeds = 1 if BPMeds == "Yes" else 0
 prevalentStroke = 1 if prevalentStroke == "Yes" else 0
 prevalentHyp = 1 if prevalentHyp == "Yes" else 0
 diabetes = 1 if diabetes == "Yes" else 0
 
-# Prepare input
-input_data = pd.DataFrame([[
-    age, sex, cigsPerDay,
-    BPMeds, prevalentStroke, prevalentHyp, diabetes,
-    totChol, sysBP, diaBP, BMI, glucose
-]], columns=['age', 'sex', 'cigsPerDay',
-             'BPMeds', 'prevalentStroke', 'prevalentHyp', 'diabetes',
-             'totChol', 'sysBP', 'diaBP', 'BMI', 'glucose'])
+# Feature Engineering
+def smoking_level_fn(cigs):
+    if cigs == 0:
+        return 0
+    elif cigs <= 10:
+        return 1
+    elif cigs <= 20:
+        return 2
+    else:
+        return 3
+
+def bmi_category_fn(bmi):
+    if bmi < 18.5:
+        return 0
+    elif bmi < 25:
+        return 1
+    elif bmi < 30:
+        return 2
+    else:
+        return 3
+
+bp_ratio = round(sysBP / diaBP, 2)
+chol_age_ratio = round(totChol / age, 2)
+smoking_level = smoking_level_fn(cigsPerDay)
+bmi_category = bmi_category_fn(BMI)
+
+# Final Input for Model
+input_df = pd.DataFrame([[
+    age, sex, is_smoking, BPMeds, prevalentStroke, prevalentHyp, diabetes,
+    totChol, sysBP, diaBP, glucose, smoking_level, bp_ratio, chol_age_ratio, bmi_category
+]], columns=[
+    'age', 'sex', 'is_smoking', 'BPMeds', 'prevalentStroke', 'prevalentHyp',
+    'diabetes', 'totChol', 'sysBP', 'diaBP', 'glucose', 'smoking_level',
+    'bp_ratio', 'chol_age_ratio', 'bmi_category'
+])
 
 # Predict
 if st.button("🩺 Predict CHD Risk"):
     # Predictions
-    rf_pred = rf_model.predict(input_data)[0]
-    rf_proba = rf_model.predict_proba(input_data)[0][1]
+    rf_pred = rf_model.predict(input_df)[0]
+    rf_proba = rf_model.predict_proba(input_df)[0][1]
 
-    stack_pred = stack_model.predict(input_data)[0]
-    stack_proba = stack_model.predict_proba(input_data)[0][1]
+    stack_pred = stack_model.predict(input_df)[0]
+    stack_proba = stack_model.predict_proba(input_df)[0][1]
 
     # Show metrics
     col4, col5 = st.columns(2)
@@ -135,9 +178,9 @@ if st.button("🩺 Predict CHD Risk"):
             st.plotly_chart(fig, use_container_width=True)
 
     # Final verdict based on stacking model
-    if stack_proba > 0.7:
+    if stack_proba > 0.6:
         st.success("🔴 High Risk of Coronary Heart Disease. Please consult a cardiologist immediately.")
-    elif 0.4 <= stack_proba <= 0.7:
+    elif 0.3 <= stack_proba <= 0.6:
         st.success("🟡 Moderate Risk of CHD. Lifestyle changes and further tests are recommended.")
     else:
         st.success("🟢 Low Risk. Maintain a healthy lifestyle and regular checkups.")
