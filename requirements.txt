@@ -6,4 +6,3 @@ joblib
 plotly
 streamlit-lottie
 fpdf
-io
