@@ -96,48 +96,24 @@ st_lottie(lottie_heart, height=200, key="heart")
 with st.expander("📘 Show Reference Table For Healthy Individual (Based on Age)"):
     st.markdown("""
     <div style="overflow-x: auto;">
-        <style>
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                font-size: 16px;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                text-align: center;
-                padding: 8px;
-            }
-            th {
-                background-color: #f2f2f2;
-                color: #333;
-                font-weight: bold;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-        </style>
+    
+    ### 🧾 Reference Table for Healthy Individuals (Age-Wise)
 
-        <h4>🧾 Reference Table for Healthy Individuals (Age-Wise)</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Age Group</th><th>Systolic BP</th><th>Diastolic BP</th><th>Total Cholesterol</th><th>BMI</th><th>Fasting Glucose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>18–29</td><td>100–120</td><td>60–80</td><td>125–200</td><td>18.5–24.9</td><td>70–99</td></tr>
+            <tr><td>30–39</td><td>105–125</td><td>65–85</td><td>130–210</td><td>18.5–24.9</td><td>70–99</td></tr>
+            <tr><td>40–49</td><td>110–130</td><td>70–85</td><td>140–220</td><td>18.5–25.0</td><td>70–99</td></tr>
+            <tr><td>50–59</td><td>115–135</td><td>70–90</td><td>150–230</td><td>18.5–25.0</td><td>70–99</td></tr>
+            <tr><td>60+</td><td>120–140</td><td>70–90</td><td>160–240</td><td>19–26</td><td>70–105</td></tr>
+        </tbody>
+    </table>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Age Group</th>
-                    <th>Systolic BP</th>
-                    <th>Diastolic BP</th>
-                    <th>Total Cholesterol</th>
-                    <th>BMI</th>
-                    <th>Fasting Glucose</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>18–29</td><td>100–120</td><td>60–80</td><td>125–200</td><td>18.5–24.9</td><td>70–99</td></tr>
-                <tr><td>30–39</td><td>105–125</td><td>65–85</td><td>130–210</td><td>18.5–24.9</td><td>70–99</td></tr>
-                <tr><td>40–49</td><td>110–130</td><td>70–85</td><td>140–220</td><td>18.5–25.0</td><td>70–99</td></tr>
-                <tr><td>50–59</td><td>115–135</td><td>70–90</td><td>150–230</td><td>18.5–25.0</td><td>70–99</td></tr>
-                <tr><td>60+</td><td>120–140</td><td>70–90</td><td>160–240</td><td>19–26</td><td>70–105</td></tr>
-            </tbody>
-        </table>
     </div>
     """, unsafe_allow_html=True)
 
