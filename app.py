@@ -13,7 +13,7 @@ stack_model = joblib.load("Stacking_classifier_model.pkl")
 # Page config
 st.set_page_config(page_title="CHD Predictor", layout="wide")
 
-# Load Lottie animation
+# Load animation
 def load_lottie(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
@@ -50,31 +50,7 @@ st.markdown("""
 st.markdown('<div class="title">💖 CHD Risk Predictor</div>', unsafe_allow_html=True)
 st_lottie(lottie_heart, height=200, key="heart")
 
-# Spacer
-st.markdown("<br>", unsafe_allow_html=True)
-
-# Expander Reference Table
-with st.expander("📘 Show Reference Table For Healthy Individual (Based on Age)"):
-        st.markdown("""
-### 🧾 Reference Table for Healthy Individuals (Age-Wise)
-
-| Age Group | Systolic BP (mmHg) | Diastolic BP (mmHg) | Total Cholesterol (mg/dL) | BMI (kg/m²) | Fasting Glucose (mg/dL) |
-|-----------|--------------------|----------------------|----------------------------|-------------|--------------------------|
-| 18–29     | 100–120            | 60–80                | 125–200                    | 18.5–24.9   | 70–99                   |
-| 30–39     | 105–125            | 65–85                | 130–210                    | 18.5–24.9   | 70–99                   |
-| 40–49     | 110–130            | 70–85                | 140–220                    | 18.5–25.0   | 70–99                   |
-| 50–59     | 115–135            | 70–90                | 150–230                    | 18.5–25.0   | 70–99                   |
-| 60+       | 120–140            | 70–90                | 160–240                    | 19–26       | 70–105                  |
-
-**Note**:
-- These values are for non-athletic, average healthy adults.
-- Actual targets may differ for people with existing conditions (e.g., diabetes, heart disease).
-- Fasting glucose means measured after 8 hours without food.
-
-👉 If unsure of your exact numbers but you’re healthy, use values from your age group.
-""")
-
-# Input section
+# Input fields
 st.subheader("🧬 Enter Patient Details")
 col1, col2, col3 = st.columns(3)
 
@@ -103,7 +79,7 @@ prevalentStroke = 1 if prevalentStroke == "Yes" else 0
 prevalentHyp = 1 if prevalentHyp == "Yes" else 0
 diabetes = 1 if diabetes == "Yes" else 0
 
-# Create input DataFrame
+# Prepare input
 input_data = pd.DataFrame([[
     age, sex, cigsPerDay,
     BPMeds, prevalentStroke, prevalentHyp, diabetes,
@@ -114,16 +90,31 @@ input_data = pd.DataFrame([[
 
 # Predict
 if st.button("🩺 Predict CHD Risk"):
-    rf_prob = rf_model.predict_proba(input_data)[0][1] * 100
-    stack_prob = stack_model.predict_proba(input_data)[0][1] * 100
+    # Predictions
+    rf_pred = rf_model.predict(input_data)[0]
+    rf_proba = rf_model.predict_proba(input_data)[0][1]
 
-    col1, col2 = st.columns(2)
-    for idx, (name, prob) in enumerate([("Random Forest", rf_prob), ("Stacking Classifier", stack_prob)]):
-        with [col1, col2][idx]:
-            st.markdown(f"<h4 style='text-align: center; margin-top: 20px;'>CHD Probability – <span style='color:#ff4d6d'>{name}</span></h4>", unsafe_allow_html=True)
+    stack_pred = stack_model.predict(input_data)[0]
+    stack_proba = stack_model.predict_proba(input_data)[0][1]
+
+    # Show metrics
+    col4, col5 = st.columns(2)
+    with col4:
+        st.metric("Random Forest Prediction", 
+                  "CHD Risk" if rf_pred else "No Risk", 
+                  delta=f"{rf_proba:.2%}")
+    with col5:
+        st.metric("Stacked Model Prediction", 
+                  "CHD Risk" if stack_pred else "No Risk", 
+                  delta=f"{stack_proba:.2%} Probability")
+
+    # Gauges
+    col6, col7 = st.columns(2)
+    for idx, (model_name, prob) in enumerate([("Random Forest", rf_proba), ("Stacking Classifier", stack_proba)]):
+        with [col6, col7][idx]:
             fig = go.Figure(go.Indicator(
                 mode="gauge+number",
-                value=prob,
+                value=prob * 100,
                 domain={'x': [0, 1], 'y': [0, 1]},
                 gauge={
                     'axis': {'range': [0, 100]},
@@ -135,13 +126,21 @@ if st.button("🩺 Predict CHD Risk"):
                     ],
                 }
             ))
-            fig.update_layout(height=300, margin=dict(t=30, b=10))
+            fig.update_layout(
+                title=f"{model_name} Risk Score",
+                height=250,  # Increased height
+                margin=dict(t=50, b=10, l=10, r=10),
+                )
+
             st.plotly_chart(fig, use_container_width=True)
 
-    st.success(f"✅ Based on the Stacking Classifier, **{'you are at risk' if stack_prob else 'your risk is low'}**. Please consult a healthcare provider.")
-
-    # Add clear spacing
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    # Final verdict based on stacking model
+    if stack_proba > 0.7:
+        st.success("🔴 High Risk of Coronary Heart Disease. Please consult a cardiologist immediately.")
+    elif 0.4 <= stack_proba <= 0.7:
+        st.success("🟡 Moderate Risk of CHD. Lifestyle changes and further tests are recommended.")
+    else:
+        st.success("🟢 Low Risk. Maintain a healthy lifestyle and regular checkups.")
 
     # Explanation Expander
     with st.expander("ℹ️ Understanding the CHD Risk Predictions (Important)"):
