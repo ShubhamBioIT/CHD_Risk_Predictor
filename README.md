@@ -74,7 +74,7 @@ Each is shown with an animated **gauge meter**:
 
 ## 🧪 Example Screenshot
 
-> ![App Screenshot](your-screenshot-link.png)  
+> ![App Screenshot](app_screenshot.png)  
 *(Upload your app screenshot here)*
 
 ---
