@@ -93,5 +93,5 @@ That’s why this model gives **balanced, calibrated predictions** instead of ov
 
 1. **Clone the repo**  
    ```bash
-   git clone https://github.com/your-username/chd-risk-predictor.git
+   git clone https://github.com/ShubhamBioIT/chd-risk-predictor.git
    cd chd-risk-predictor
