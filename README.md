@@ -1,5 +1,9 @@
 # 💖 CHD Risk Predictor Web App
 
+[![Streamlit](https://img.shields.io/badge/built%20with-Streamlit-ff4b4b?style=flat-square&logo=streamlit)](https://streamlit.io)
+[![Python](https://img.shields.io/badge/python-3.13%2B-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+
 This is a **machine learning-powered web application** built using **Streamlit** that predicts the **10-year risk of developing Coronary Heart Disease (CHD)** based on an individual's medical and lifestyle data. 
 
 The app uses two advanced models:
