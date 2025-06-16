@@ -95,3 +95,7 @@ That’s why this model gives **balanced, calibrated predictions** instead of ov
    ```bash
    git clone https://github.com/ShubhamBioIT/chd-risk-predictor.git
    cd chd-risk-predictor
+
+   # Install dependencies
+   pip install -r requirements.txt
+
