@@ -144,20 +144,6 @@ The application will automatically open in your default web browser at `http://l
 - Share with healthcare providers
 - Keep for personal records
 
-## 📊 Model Performance
-
-### Random Forest Classifier
-- **Accuracy**: 87.2%
-- **Precision**: 85.6%
-- **Recall**: 89.1%
-- **F1-Score**: 87.3%
-
-### Stacking Classifier
-- **Accuracy**: 89.5%
-- **Precision**: 87.8%
-- **Recall**: 91.2%
-- **F1-Score**: 89.4%
-
 ### Feature Engineering
 - **Original Features**: 11
 - **Engineered Features**: 15
